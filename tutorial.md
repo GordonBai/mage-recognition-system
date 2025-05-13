@@ -21,6 +21,7 @@
 - 至少2GB可用RAM
 - 至少10GB可用磁盘空间
 - 互联网连接（用于拉取Docker镜像和TensorFlow模型）
+- 开发环境是：AWS EC2 Ubuntu t2.large
 
 ## 快速启动
 
@@ -28,8 +29,8 @@
 
 1. 克隆项目仓库：
    ```bash
-   git clone <repository-url>
-   cd Image-Recognition-System2/image-recognition-system
+   git clone https://github.com/GordonBai/mage-recognition-system.git
+   cd image-recognition-system
    ```
 
 2. 启动所有服务：
