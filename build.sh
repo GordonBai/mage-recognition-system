@@ -12,10 +12,6 @@ docker build -t ${DOCKER_REGISTRY}/image-recognition-frontend:${TAG} ./frontend
 echo "Building backend image..."
 docker build -t ${DOCKER_REGISTRY}/image-recognition-backend:${TAG} ./backend
 
-# 构建OpenFaaS函数
-echo "Building OpenFaaS function image..."
-docker build -t ${DOCKER_REGISTRY}/image-recognition-function:${TAG} ./openfaas-functions/image-recognition
-
 # 构建Nginx
 echo "Building Nginx image..."
 docker build -t ${DOCKER_REGISTRY}/image-recognition-nginx:${TAG} ./nginx
@@ -25,7 +21,6 @@ if [ "$PUSH" = "true" ]; then
   echo "Pushing images to registry..."
   docker push ${DOCKER_REGISTRY}/image-recognition-frontend:${TAG}
   docker push ${DOCKER_REGISTRY}/image-recognition-backend:${TAG}
-  docker push ${DOCKER_REGISTRY}/image-recognition-function:${TAG}
   docker push ${DOCKER_REGISTRY}/image-recognition-nginx:${TAG}
 fi
 

@@ -281,7 +281,7 @@ async def startup_db_client():
 def read_root():
     return {"message": "Image Recognition API"}
 
-@app.post("/images/")
+@app.post("/api/images/")
 async def upload_image(file: UploadFile = File(...), db: Session = Depends(get_db)):
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File must be an image")
@@ -331,14 +331,14 @@ async def upload_image(file: UploadFile = File(...), db: Session = Depends(get_d
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
 
-@app.get("/images/{image_id}", response_model=ImageRecognitionResponse)
+@app.get("/api/images/{image_id}", response_model=ImageRecognitionResponse)
 def get_image(image_id: str, db: Session = Depends(get_db)):
     db_record = db.query(ImageRecord).filter(ImageRecord.id == image_id).first()
     if db_record is None:
         raise HTTPException(status_code=404, detail="Image not found")
     return db_record.to_response()
 
-@app.get("/images/")
+@app.get("/api/images/")
 def list_images(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     images = db.query(ImageRecord).offset(skip).limit(limit).all()
     return [img.to_response() for img in images]

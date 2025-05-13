@@ -21,7 +21,7 @@
 - 至少2GB可用RAM
 - 至少10GB可用磁盘空间
 - 互联网连接（用于拉取Docker镜像和TensorFlow模型）
-- 开发环境是：AWS EC2 Ubuntu t2.large
+- 开发环境是：AWS EC2 Ubuntu t2.large (推荐运行环境)
 
 ## 快速启动
 

@@ -13,7 +13,7 @@
 - **数据库**: PostgreSQL (替代DynamoDB)
 - **API网关**: Nginx (替代API Gateway)
 - **容器化**: Docker
-- **编排**: Docker Compose
+- **编排**: Docker Compose / Kubernetes
 
 ## 系统工作流程
 
@@ -24,14 +24,39 @@
 5. 识别结果存入PostgreSQL数据库
 6. 结果返回给用户
 
+## 本地开发
 
+```bash
+# 启动本地开发环境
+docker-compose up -d
+```
+
+## Kubernetes部署
+
+系统也可以部署到Kubernetes集群中：
+
+```bash
+# 构建Docker镜像
+./build.sh
+
+# 如果需要推送到远程仓库
+DOCKER_REGISTRY=your-registry.com PUSH=true ./build.sh
+
+# 部署到Kubernetes集群
+./deploy.sh
+```
 
 ## 访问系统
 
 系统启动后，可以通过以下地址访问：
 
-- 前端界面: http://localhost:8888
-- MinIO控制台: http://localhost:9998 (用户名/密码: minioadmin/minioadmin)
+- 本地Docker Compose部署:
+  - 前端界面: http://localhost:8888
+  - MinIO控制台: http://localhost:9998 (用户名/密码: minioadmin/minioadmin)
+
+- Kubernetes部署:
+  - 前端界面: 通过LoadBalancer获取的外部IP访问
+  - 查看外部IP: `kubectl get service nginx`
 
 ## 组件说明
 
