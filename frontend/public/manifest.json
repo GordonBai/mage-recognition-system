@@ -1,0 +1,9 @@
+{
+  "short_name": "图像识别",
+  "name": "图像识别系统",
+  "icons": [],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+} 
