@@ -19,47 +19,6 @@ from ultralytics import YOLO
 
 model = YOLO("yolo11n.pt")
 
-# TensorFlow相关导入
-# try:
-#     import tensorflow as tf
-#     import tensorflow_hub as hub
-#     # 加载预训练模型
-#     print("正在加载TensorFlow Hub模型...")
-#     model_url = "https://tfhub.dev/google/tf2-preview/mobilenet_v2/classification/4"
-#     model = tf.keras.Sequential([
-#         hub.KerasLayer(model_url)
-#     ])
-#     print("TensorFlow Hub模型加载成功")
-#     # 加载ImageNet标签
-#     labels_path = tf.keras.utils.get_file('ImageNetLabels.txt',
-#                                           'https://storage.googleapis.com/download.tensorflow.org/data/ImageNetLabels.txt')
-#     with open(labels_path) as f:
-#         labels = f.readlines()
-#     labels = [label.strip() for label in labels]
-#     # 创建中文标签映射（只包含一些常见物体）
-#     chinese_labels = {
-#         'cat': '猫',
-#         'dog': '狗',
-#         'cup': '杯子',
-#         'bottle': '瓶子',
-#         'chair': '椅子',
-#         'table': '桌子',
-#         'car': '汽车',
-#         'bicycle': '自行车',
-#         'book': '书',
-#         'phone': '手机',
-#         'laptop': '笔记本电脑',
-#         'keyboard': '键盘',
-#         'mouse': '鼠标',
-#         'tv': '电视',
-#         'clock': '时钟',
-#         'vase': '花瓶'
-#     }
-#     OBJECT_RECOGNITION_ENABLED = True
-# except Exception as e:
-#     print(f"TensorFlow模型加载失败: {str(e)}")
-#     OBJECT_RECOGNITION_ENABLED = False
-
 # 加载环境变量
 load_dotenv()
 
@@ -135,9 +94,6 @@ def recognize_objects(img_data):
     """
     使用TensorFlow Hub模型识别图像中的物体
     """
-    if not OBJECT_RECOGNITION_ENABLED:
-        return []
-    
     try:
         results = []
         predictions = model(img_data)
@@ -326,4 +282,4 @@ def list_images(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+    uvicorn.run(app, host="0.0.0.0", port=8000)
