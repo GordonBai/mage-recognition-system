@@ -1,7 +1,6 @@
 import os
 import uuid
 import json
-from typing import Dict, Any, List, Optional
 import numpy as np
 from fastapi import FastAPI, File, UploadFile, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,56 +10,55 @@ from sqlalchemy.orm import sessionmaker, Session
 import datetime
 from minio import Minio
 from minio.error import S3Error
-import requests
 from io import BytesIO
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from PIL import Image, ImageStat
+from ultralytics import YOLO
+
+
+model = YOLO("yolo11n.pt")
 
 # TensorFlow相关导入
-try:
-    import tensorflow as tf
-    import tensorflow_hub as hub
-    
-    # 加载预训练模型
-    print("正在加载TensorFlow Hub模型...")
-    model_url = "https://tfhub.dev/google/tf2-preview/mobilenet_v2/classification/4"
-    model = tf.keras.Sequential([
-        hub.KerasLayer(model_url)
-    ])
-    print("TensorFlow Hub模型加载成功")
-    
-    # 加载ImageNet标签
-    labels_path = tf.keras.utils.get_file('ImageNetLabels.txt',
-                                          'https://storage.googleapis.com/download.tensorflow.org/data/ImageNetLabels.txt')
-    with open(labels_path) as f:
-        labels = f.readlines()
-    labels = [label.strip() for label in labels]
-    
-    # 创建中文标签映射（只包含一些常见物体）
-    chinese_labels = {
-        'cat': '猫',
-        'dog': '狗',
-        'cup': '杯子',
-        'bottle': '瓶子',
-        'chair': '椅子',
-        'table': '桌子',
-        'car': '汽车',
-        'bicycle': '自行车',
-        'book': '书',
-        'phone': '手机',
-        'laptop': '笔记本电脑',
-        'keyboard': '键盘',
-        'mouse': '鼠标',
-        'tv': '电视',
-        'clock': '时钟',
-        'vase': '花瓶'
-    }
-    
-    OBJECT_RECOGNITION_ENABLED = True
-except Exception as e:
-    print(f"TensorFlow模型加载失败: {str(e)}")
-    OBJECT_RECOGNITION_ENABLED = False
+# try:
+#     import tensorflow as tf
+#     import tensorflow_hub as hub
+#     # 加载预训练模型
+#     print("正在加载TensorFlow Hub模型...")
+#     model_url = "https://tfhub.dev/google/tf2-preview/mobilenet_v2/classification/4"
+#     model = tf.keras.Sequential([
+#         hub.KerasLayer(model_url)
+#     ])
+#     print("TensorFlow Hub模型加载成功")
+#     # 加载ImageNet标签
+#     labels_path = tf.keras.utils.get_file('ImageNetLabels.txt',
+#                                           'https://storage.googleapis.com/download.tensorflow.org/data/ImageNetLabels.txt')
+#     with open(labels_path) as f:
+#         labels = f.readlines()
+#     labels = [label.strip() for label in labels]
+#     # 创建中文标签映射（只包含一些常见物体）
+#     chinese_labels = {
+#         'cat': '猫',
+#         'dog': '狗',
+#         'cup': '杯子',
+#         'bottle': '瓶子',
+#         'chair': '椅子',
+#         'table': '桌子',
+#         'car': '汽车',
+#         'bicycle': '自行车',
+#         'book': '书',
+#         'phone': '手机',
+#         'laptop': '笔记本电脑',
+#         'keyboard': '键盘',
+#         'mouse': '鼠标',
+#         'tv': '电视',
+#         'clock': '时钟',
+#         'vase': '花瓶'
+#     }
+#     OBJECT_RECOGNITION_ENABLED = True
+# except Exception as e:
+#     print(f"TensorFlow模型加载失败: {str(e)}")
+#     OBJECT_RECOGNITION_ENABLED = False
 
 # 加载环境变量
 load_dotenv()
@@ -141,31 +139,14 @@ def recognize_objects(img_data):
         return []
     
     try:
-        # 将二进制数据转换为图像
-        img = Image.open(BytesIO(img_data))
-        
-        # 调整图像大小为模型输入尺寸
-        img = img.resize((224, 224))
-        
-        # 转换为numpy数组
-        img_array = np.array(img) / 255.0
-        img_array = np.expand_dims(img_array, axis=0)
-        
-        # 进行预测
-        predictions = model.predict(img_array)
-        
-        # 获取前5个预测结果
-        top_5 = tf.argsort(predictions[0], direction='DESCENDING')[:5]
-        
         results = []
-        for idx in top_5:
-            idx = idx.numpy()
-            label = labels[idx]
-            
-            results.append({
-                "class": label
-            })
-        
+        predictions = model(img_data)
+        for idx in predictions:
+            names = [idx.names[cls.item()] for cls in idx.boxes.cls.int()]
+            for name in names:
+                results.append({
+                    "class": name
+                })
         return results
     except Exception as e:
         print(f"对象识别错误: {str(e)}")

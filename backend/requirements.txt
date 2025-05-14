@@ -10,4 +10,10 @@ pydantic==1.10.7
 pillow==9.5.0
 tensorflow==2.10.0
 numpy==1.24.3
-tensorflow-hub==0.13.0 
+tensorflow-hub==0.13.0
+--index-url https://download.pytorch.org/whl/cpu
+torch
+torchvision
+torchaudio
+--index-url https://pypi.org/simple
+ultralytics
