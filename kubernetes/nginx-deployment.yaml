@@ -2,8 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx
-  labels:
-    app: nginx
+  namespace: image-recognition
 spec:
   replicas: 1
   selector:
@@ -14,9 +13,11 @@ spec:
       labels:
         app: nginx
     spec:
+      imagePullSecrets:
+        - name: regcred
       containers:
       - name: nginx
-        image: ${DOCKER_REGISTRY}/image-recognition-nginx:latest
+        image: docker.io/lucashimself/image-recognition-nginx:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 80
@@ -27,15 +28,17 @@ spec:
           requests:
             cpu: "100m"
             memory: "64Mi"
+
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: nginx
+  namespace: image-recognition
 spec:
   selector:
     app: nginx
   ports:
   - port: 80
     targetPort: 80
-  type: LoadBalancer 
+  type: LoadBalancer

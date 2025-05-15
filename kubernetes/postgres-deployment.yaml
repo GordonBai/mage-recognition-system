@@ -2,27 +2,30 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: postgres-pvc
+  namespace: image-recognition
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
       storage: 1Gi
+
 ---
 apiVersion: v1
 kind: Secret
 metadata:
   name: postgres-secret
+  namespace: image-recognition
 type: Opaque
 data:
-  postgres-password: cG9zdGdyZXM=  # 'postgres' encoded in base64
+  postgres-password: cG9zdGdyZXM=
+
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: postgres
-  labels:
-    app: postgres
+  namespace: image-recognition
 spec:
   replicas: 1
   selector:
@@ -55,15 +58,17 @@ spec:
       - name: postgres-storage
         persistentVolumeClaim:
           claimName: postgres-pvc
+
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: postgres
+  namespace: image-recognition
 spec:
   selector:
     app: postgres
   ports:
   - port: 5432
     targetPort: 5432
-  type: ClusterIP 
+  type: ClusterIP

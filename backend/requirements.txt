@@ -11,3 +11,5 @@ pillow==9.5.0
 tensorflow==2.10.0
 numpy==1.24.3
 tensorflow-hub==0.13.0 
+gunicorn==20.1.0
+flask>=2.0.0

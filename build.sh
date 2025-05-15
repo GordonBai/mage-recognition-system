@@ -1,27 +1,19 @@
 #!/bin/bash
 
-# 设置Docker镜像仓库
-DOCKER_REGISTRY=${DOCKER_REGISTRY:-"localhost:5000"}
+DOCKER_REGISTRY=${DOCKER_REGISTRY:-"docker.io/lucashimself"}
 TAG=${TAG:-"latest"}
+PUSH=${PUSH:-"false"}
 
-# 构建前端
-echo "Building frontend image..."
-docker build -t ${DOCKER_REGISTRY}/image-recognition-frontend:${TAG} ./frontend
+declare -a services=("frontend" "backend" "nginx")
 
-# 构建后端
-echo "Building backend image..."
-docker build -t ${DOCKER_REGISTRY}/image-recognition-backend:${TAG} ./backend
+for service in "${services[@]}"; do
+  echo "Building $service image..."
+  docker build -t ${DOCKER_REGISTRY}/image-recognition-${service}:${TAG} ./${service}
+  
+  if [ "$PUSH" = "true" ]; then
+    echo "Pushing $service image..."
+    docker push ${DOCKER_REGISTRY}/image-recognition-${service}:${TAG}
+  fi
+done
 
-# 构建Nginx
-echo "Building Nginx image..."
-docker build -t ${DOCKER_REGISTRY}/image-recognition-nginx:${TAG} ./nginx
-
-# 推送镜像到仓库
-if [ "$PUSH" = "true" ]; then
-  echo "Pushing images to registry..."
-  docker push ${DOCKER_REGISTRY}/image-recognition-frontend:${TAG}
-  docker push ${DOCKER_REGISTRY}/image-recognition-backend:${TAG}
-  docker push ${DOCKER_REGISTRY}/image-recognition-nginx:${TAG}
-fi
-
-echo "Build completed!" 
+echo "Build completed!"

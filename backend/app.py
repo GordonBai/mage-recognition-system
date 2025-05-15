@@ -343,6 +343,41 @@ def list_images(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     images = db.query(ImageRecord).offset(skip).limit(limit).all()
     return [img.to_response() for img in images]
 
+@app.get("/healthcheck")
+async def health_check(db: Session = Depends(get_db)):
+    """
+    Comprehensive health check endpoint that verifies all dependencies.
+    """
+    checks = {
+        "api_online": True,
+        "database_online": False,
+        "minio_online": False,
+        "ml_model_loaded": OBJECT_RECOGNITION_ENABLED
+    }
+    
+    # Check database
+    try:
+        db.execute("SELECT 1")
+        checks["database_online"] = True
+    except Exception as e:
+        pass
+    
+    # Check MinIO
+    try:
+        minio_client = get_minio_client()
+        minio_client.list_buckets()
+        checks["minio_online"] = True
+    except Exception as e:
+        pass
+    
+    status = "healthy" if all(checks.values()) else "degraded"
+    
+    return {
+        "status": status,
+        "checks": checks,
+        "timestamp": datetime.datetime.utcnow()
+    }
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000) 

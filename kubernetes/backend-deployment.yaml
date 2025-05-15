@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend
+  namespace: image-recognition
   labels:
     app: backend
 spec:
@@ -16,15 +17,15 @@ spec:
     spec:
       containers:
       - name: backend
-        image: ${DOCKER_REGISTRY}/image-recognition-backend:latest
+        image: docker.io/lucashimself/image-recognition-backend:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8000
         env:
         - name: DATABASE_URL
-          value: "postgresql://postgres:postgres@postgres:5432/imagerecognition"
+          value: "postgresql://postgres:postgres@postgres.image-recognition.svc.cluster.local:5432/imagerecognition"
         - name: MINIO_ENDPOINT
-          value: "minio:9000"
+          value: "minio.image-recognition.svc.cluster.local:9000"
         - name: MINIO_ACCESS_KEY
           valueFrom:
             secretKeyRef:
@@ -37,20 +38,46 @@ spec:
               key: minio-secret-key
         resources:
           limits:
-            cpu: "1"
-            memory: "1Gi"
-          requests:
-            cpu: "200m"
+            cpu: "500m"
             memory: "512Mi"
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+        livenessProbe:
+          httpGet:
+            path: /healthcheck  # Replace with your actual health endpoint
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          failureThreshold: 3
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /healthcheck  # Replace with your actual health endpoint
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          failureThreshold: 3
+          timeoutSeconds: 3
+        startupProbe:
+          httpGet:
+            path: /healthcheck  # Replace with your actual health endpoint
+            port: 8000
+          failureThreshold: 30  # 30 attempts * 5s = 150s max startup time
+          periodSeconds: 5
+          timeoutSeconds: 3
+      imagePullSecrets:
+      - name: regcred
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: backend
+  namespace: image-recognition
 spec:
   selector:
     app: backend
   ports:
   - port: 8000
     targetPort: 8000
-  type: ClusterIP 
+  type: ClusterIP
