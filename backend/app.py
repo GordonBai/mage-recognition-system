@@ -1,6 +1,7 @@
 import os
 import uuid
 import json
+from typing import Dict, Any, List, Optional
 import numpy as np
 from fastapi import FastAPI, File, UploadFile, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,14 +11,13 @@ from sqlalchemy.orm import sessionmaker, Session
 import datetime
 from minio import Minio
 from minio.error import S3Error
+import requests
 from io import BytesIO
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from PIL import Image, ImageStat
 from ultralytics import YOLO
 
-
-model = YOLO("yolo11n.pt")
 
 # 加载环境变量
 load_dotenv()
@@ -95,18 +95,18 @@ def recognize_objects(img_data):
     使用TensorFlow Hub模型识别图像中的物体
     """
     try:
-        results = []
-        predictions = model(img_data)
-        for idx in predictions:
-            names = [idx.names[cls.item()] for cls in idx.boxes.cls.int()]
-            for name in names:
-                results.append({
-                    "class": name
-                })
+        # model = YOLO("yolo11n.pt")
+        results = [{"class": 'no error'}]
+        img = Image.open(BytesIO(img_data))
+        # predictions = model(img)
+        # for idx in predictions:
+        #     names = [idx.names[cls.item()] for cls in idx.boxes.cls.int()]
+        #     for name in names:
+        #         results.append({"class": name})
         return results
     except Exception as e:
         print(f"对象识别错误: {str(e)}")
-        return []
+        return [{"class": 'gg'}]
 
 # 简化的图像分析函数
 def analyze_image(img_data):
