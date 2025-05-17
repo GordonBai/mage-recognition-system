@@ -47,11 +47,11 @@ Run the deploy.sh script to apply all Kubernetes manifests:
 ```
 Show the status of all the pods
 ```bash
-kubectget pods -n image-recognition
+kubectl get pods -n image-recognition
 ```
 Reapply all the yaml if you have any updates
 ```bash
-kubectapply -f kubernetes
+kubectl apply -f kubernetes
 ```
 
 ## Accessing the Application <a name="accessing-the-application"></a>
