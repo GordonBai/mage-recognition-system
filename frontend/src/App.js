@@ -15,7 +15,7 @@ function App() {
       setSelectedFile(file);
       setError('');
       
-      // 创建预览
+      // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreview(reader.result);
@@ -24,7 +24,7 @@ function App() {
     } else {
       setSelectedFile(null);
       setPreview('');
-      setError('请选择有效的图片文件');
+      setError('Please select a valid image file');
     }
   };
 
@@ -41,14 +41,14 @@ function App() {
         setSelectedFile(file);
         setError('');
         
-        // 创建预览
+        // Create preview
         const reader = new FileReader();
         reader.onloadend = () => {
           setPreview(reader.result);
         };
         reader.readAsDataURL(file);
       } else {
-        setError('请选择有效的图片文件');
+        setError('Please select a valid image file');
       }
     }
   };
@@ -59,7 +59,7 @@ function App() {
 
   const handleSubmit = async () => {
     if (!selectedFile) {
-      setError('请先选择一个图片');
+      setError('Please select an image first');
       return;
     }
 
@@ -79,23 +79,23 @@ function App() {
 
       setLoading(false);
       
-      // 解析识别结果
+      // Parse recognition results
       try {
-        // 确保recognition_result是字符串，然后解析为JSON
+        // Ensure recognition_result is a string, then parse as JSON
         let resultData = null;
         if (response.data && response.data.recognition_result) {
           resultData = JSON.parse(response.data.recognition_result);
         }
         setResults(resultData);
-        console.log("解析后的结果:", resultData);
+        console.log("Parsed results:", resultData);
       } catch (e) {
-        console.error("解析结果时出错:", e);
-        setError('解析结果时出错: ' + e.message);
+        console.error("Error parsing results:", e);
+        setError('Error parsing results: ' + e.message);
       }
     } catch (error) {
       setLoading(false);
-      console.error("上传失败:", error);
-      setError('上传失败: ' + (error.response?.data?.detail || error.message));
+      console.error("Upload failed:", error);
+      setError('Upload failed: ' + (error.response?.data?.detail || error.message));
     }
   };
 
@@ -106,7 +106,7 @@ function App() {
       <div className="results">
         {results.predictions && (
           <div className="basic-info">
-            <h3>基本信息:</h3>
+            <h3>Basic Information:</h3>
             {results.predictions.map((item, index) => (
               <div key={index} className="result-item">
                 <div>
@@ -119,7 +119,7 @@ function App() {
 
         {results.objects && results.objects.length > 0 && (
           <div className="object-recognition">
-            <h3>识别出的物体:</h3>
+            <h3>Recognized Objects:</h3>
             <div className="object-list">
               {results.objects.map((item, index) => (
                 <div key={index} className="result-item">
@@ -131,7 +131,7 @@ function App() {
         )}
 
         {results.error && (
-          <div className="error">处理错误: {results.error}</div>
+          <div className="error">Processing error: {results.error}</div>
         )}
       </div>
     );
@@ -140,8 +140,8 @@ function App() {
   return (
     <div className="container">
       <div className="card">
-        <h1>图像识别系统</h1>
-        <p>上传图片以识别其中的内容</p>
+        <h1>Image Recognition System</h1>
+        <p>Upload an image to recognize its content</p>
 
         <div 
           className="upload-area"
@@ -150,9 +150,9 @@ function App() {
           onClick={handleUploadClick}
         >
           {preview ? (
-            <img src={preview} alt="预览" className="image-preview" />
+            <img src={preview} alt="Preview" className="image-preview" />
           ) : (
-            <p>点击或拖拽图片到此处上传</p>
+            <p>Click or drag image here to upload</p>
           )}
           <input 
             type="file" 
@@ -170,7 +170,7 @@ function App() {
           onClick={handleSubmit}
           disabled={!selectedFile || loading}
         >
-          {loading ? '处理中...' : '识别图片'}
+          {loading ? 'Processing...' : 'Recognize Image'}
         </button>
 
         {loading && (
@@ -185,4 +185,4 @@ function App() {
   );
 }
 
-export default App; 
+export default App;

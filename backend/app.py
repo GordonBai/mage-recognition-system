@@ -18,12 +18,12 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 
-# 加载环境变量
+# Load environment variables
 load_dotenv()
 
 app = FastAPI(title="Image Recognition API")
 
-# 配置CORS
+# Configure CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -32,19 +32,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 数据库配置
+# Database configuration
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@postgres:5432/imagerecognition")
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-# MinIO配置
+# MinIO configuration
 MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "minio:9999")
 MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY", "minioadmin")
 MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY", "minioadmin")
 MINIO_BUCKET = "images"
 
-# 数据库模型
+# Database model
 class ImageRecord(Base):
     __tablename__ = "images"
 
@@ -54,7 +54,7 @@ class ImageRecord(Base):
     recognition_result = Column(Text, nullable=True)
     object_url = Column(String)
 
-    # 添加一个方法，将数据库对象转换为Pydantic模型
+    # Add a method to convert database object to Pydantic model
     def to_response(self):
         return {
             "id": self.id,
@@ -64,7 +64,7 @@ class ImageRecord(Base):
             "object_url": self.object_url
         }
 
-# 响应模型
+# Response model
 class ImageRecognitionResponse(BaseModel):
     id: str
     filename: str
@@ -72,7 +72,7 @@ class ImageRecognitionResponse(BaseModel):
     recognition_result: str
     object_url: str
 
-# 依赖项
+# Dependencies
 def get_db():
     db = SessionLocal()
     try:
@@ -88,10 +88,10 @@ def get_minio_client():
         secure=False
     )
 
-# 对象识别函数
+# Object recognition function
 def recognize_objects(img_data):
     """
-    使用TensorFlow Hub模型识别图像中的物体
+    Use TensorFlow Hub model to recognize objects in images
     """
     try:
         model = YOLO("yolo11n.pt")
@@ -109,92 +109,92 @@ def recognize_objects(img_data):
                 results.append(curr)
         return results
     except Exception as e:
-        print(f"对象识别错误: {str(e)}")
+        print(f"Object recognition error: {str(e)}")
         return [{"class": 'gg'}]
 
-# 简化的图像分析函数
+# Simplified image analysis function
 def analyze_image(img_data):
     """
-    分析图像的基本特征
+    Analyze basic features of the image
     """
     try:
-        # 将二进制数据转换为图像
+        # Convert binary data to image
         img = Image.open(BytesIO(img_data))
         
-        # 获取图像基本信息
+        # Get basic image information
         width, height = img.size
         format_name = img.format
         mode = img.mode
         
-        # 转换为RGB模式进行颜色分析
+        # Convert to RGB mode for color analysis
         if mode != 'RGB':
             img = img.convert('RGB')
         
-        # 获取图像统计信息
+        # Get image statistics
         stat = ImageStat.Stat(img)
         avg_color = stat.mean
         
-        # 判断图像主色调
+        # Determine main color tone
         r, g, b = avg_color
         
-        # 简单的颜色分类
-        color_name = "未知"
+        # Simple color classification
+        color_name = "Unknown"
         if max(r, g, b) < 60:
-            color_name = "黑色"
+            color_name = "Black"
         elif min(r, g, b) > 200:
-            color_name = "白色"
+            color_name = "White"
         elif r > max(g, b) + 20:
-            color_name = "红色"
+            color_name = "Red"
         elif g > max(r, b) + 20:
-            color_name = "绿色"
+            color_name = "Green"
         elif b > max(r, g) + 20:
-            color_name = "蓝色"
+            color_name = "Blue"
         elif abs(r - g) < 20 and abs(r - b) < 20 and abs(g - b) < 20:
             if r + g + b > 600:
-                color_name = "白色"
+                color_name = "White"
             elif r + g + b < 300:
-                color_name = "黑色"
+                color_name = "Black"
             else:
-                color_name = "灰色"
+                color_name = "Gray"
         elif r > 200 and g > 150 and b < 100:
-            color_name = "黄色"
+            color_name = "Yellow"
         
-        # 判断图像亮度
+        # Determine image brightness
         brightness = sum(avg_color) / 3
-        brightness_level = "中等亮度"
+        brightness_level = "Medium brightness"
         if brightness < 80:
-            brightness_level = "暗"
+            brightness_level = "Dark"
         elif brightness > 200:
-            brightness_level = "亮"
+            brightness_level = "Bright"
         
-        # 识别物体
+        # Recognize objects
         object_results = recognize_objects(img_data)
         
-        # 构建基本分析结果
+        # Build basic analysis results
         basic_results = [
             {
-                "class": "图像尺寸",
+                "class": "Image dimensions",
                 "description": f"{width}x{height}"
             },
             {
-                "class": "图像格式",
+                "class": "Image format",
                 "description": format_name
             },
             {
-                "class": "主色调",
+                "class": "Main color",
                 "description": color_name
             },
             {
-                "class": "亮度",
+                "class": "Brightness",
                 "description": brightness_level
             },
             {
-                "class": "平均RGB",
+                "class": "Average RGB",
                 "description": f"R:{int(r)}, G:{int(g)}, B:{int(b)}"
             }
         ]
         
-        # 返回分析结果
+        # Return analysis results
         return {
             "predictions": basic_results,
             "objects": object_results
@@ -202,12 +202,12 @@ def analyze_image(img_data):
     except Exception as e:
         return {"error": str(e)}
 
-# 创建数据库表
+# Create database tables
 @app.on_event("startup")
 async def startup_db_client():
     Base.metadata.create_all(bind=engine)
     
-    # 确保MinIO存储桶存在
+    # Ensure MinIO bucket exists
     try:
         minio_client = get_minio_client()
         if not minio_client.bucket_exists(MINIO_BUCKET):
@@ -227,14 +227,14 @@ async def upload_image(file: UploadFile = File(...), db: Session = Depends(get_d
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File must be an image")
     
-    # 生成唯一ID
+    # Generate unique ID
     image_id = str(uuid.uuid4())
     
     try:
-        # 读取上传的文件
+        # Read uploaded file
         file_data = await file.read()
         
-        # 上传到MinIO
+        # Upload to MinIO
         minio_client = get_minio_client()
         object_name = f"{image_id}/{file.filename}"
         minio_client.put_object(
@@ -245,16 +245,16 @@ async def upload_image(file: UploadFile = File(...), db: Session = Depends(get_d
             content_type=file.content_type
         )
         
-        # 生成对象URL
+        # Generate object URL
         object_url = f"http://{MINIO_ENDPOINT}/{MINIO_BUCKET}/{object_name}"
         
-        # 使用简化的图像分析
+        # Use simplified image analysis
         recognition_result = analyze_image(file_data)
         
-        # 将结果转换为JSON字符串
+        # Convert results to JSON string
         recognition_result_str = json.dumps(recognition_result)
         
-        # 存储记录到数据库
+        # Store record in database
         db_record = ImageRecord(
             id=image_id,
             filename=file.filename,
@@ -265,7 +265,7 @@ async def upload_image(file: UploadFile = File(...), db: Session = Depends(get_d
         db.commit()
         db.refresh(db_record)
         
-        # 返回符合响应模型的字典
+        # Return dictionary matching response model
         return db_record.to_response()
     except S3Error as e:
         raise HTTPException(status_code=500, detail=f"MinIO error: {str(e)}")
