@@ -1,8 +1,6 @@
 import os
 import uuid
 import json
-from typing import Dict, Any, List, Optional
-import numpy as np
 from fastapi import FastAPI, File, UploadFile, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, Column, String, DateTime, Text
@@ -11,7 +9,6 @@ from sqlalchemy.orm import sessionmaker, Session
 import datetime
 from minio import Minio
 from minio.error import S3Error
-import requests
 from io import BytesIO
 from dotenv import load_dotenv
 from pydantic import BaseModel
@@ -95,14 +92,19 @@ def recognize_objects(img_data):
     使用TensorFlow Hub模型识别图像中的物体
     """
     try:
-        # model = YOLO("yolo11n.pt")
-        results = [{"class": 'no error'}]
+        model = YOLO("yolo11n.pt")
+        results = []
         img = Image.open(BytesIO(img_data))
-        # predictions = model(img)
-        # for idx in predictions:
-        #     names = [idx.names[cls.item()] for cls in idx.boxes.cls.int()]
-        #     for name in names:
-        #         results.append({"class": name})
+        predictions = model(img)
+        for idx in predictions:
+            names = [idx.names[cls.item()] for cls in idx.boxes.cls.int()]
+            scores = [cls.item() for cls in idx.boxes.conf]
+            for i in range(len(names)):
+                name = names[i]
+                score = scores[i]
+                curr = {}
+                curr["class"] = name+": "+str(score)
+                results.append(curr)
         return results
     except Exception as e:
         print(f"对象识别错误: {str(e)}")
