@@ -1,71 +1,74 @@
 # Image Recognition System
 
-一个基于开源技术栈的图像识别系统，替代AWS无服务器架构。
+An image recognition system based on an open-source technology stack, serving as an alternative to AWS serverless architecture.
 
-## 架构
+## Architecture
 
-该项目使用以下技术栈：
+This project uses the following technology stack:
 
-- **前端**: React.js
-- **后端API**: FastAPI
-- **图像处理**: TensorFlow + PIL
-- **对象存储**: MinIO (替代S3)
-- **数据库**: PostgreSQL (替代DynamoDB)
-- **API网关**: Nginx (替代API Gateway)
-- **容器化**: Docker
-- **编排**: Docker Compose / Kubernetes
+- **Frontend**: React.js
+- **Backend API**: FastAPI
+- **Image Processing**: TensorFlow + PIL
+- **Object Storage**: MinIO (alternative to S3)
+- **Database**: PostgreSQL (alternative to DynamoDB)
+- **API Gateway**: Nginx (alternative to API Gateway)
+- **Containerization**: Docker
+- **Orchestration**: Docker Compose / Kubernetes
 
-## 系统工作流程
+## System Workflow
 
-1. 用户通过前端上传图片
-2. 前端将图片发送到后端API
-3. API将图片存储到MinIO
-4. API直接使用TensorFlow进行图像识别
-5. 识别结果存入PostgreSQL数据库
-6. 结果返回给用户
+1. Users upload images through the frontend.
+2. The frontend sends the images to the backend API.
+3. The API stores the images in MinIO.
+4. The API performs image recognition using TensorFlow.
+5. Recognition results are stored in the PostgreSQL database.
+6. Results are returned to the user.
 
-## 本地开发
+## Local Development
 
 ```bash
-# 启动本地开发环境
+# Start local development environment
 docker-compose up -d
 ```
 
-## Kubernetes部署
+## Kubernetes Deployment
 
-系统也可以部署到Kubernetes集群中：
+The system can also be deployed to a Kubernetes cluster:
 
 ```bash
-# 构建Docker镜像
+# Build Docker images
 ./build.sh
 
-# 如果需要推送到远程仓库
+# Push to remote registry (optional)
 DOCKER_REGISTRY=your-registry.com PUSH=true ./build.sh
 
-# 部署到Kubernetes集群
+# Deploy to Kubernetes cluster
 ./deploy.sh
 ```
 
-## 访问系统
+## Accessing the System
+After startup, the system can be accessed at:
 
-系统启动后，可以通过以下地址访问：
+​Local Docker Compose deployment:
 
-- 本地Docker Compose部署:
-  - 前端界面: http://localhost:8888
-  - MinIO控制台: http://localhost:9998 (用户名/密码: minioadmin/minioadmin)
+Frontend UI: http://localhost:8888
+MinIO Console: http://localhost:9998 (username/password: minioadmin/minioadmin)
+​Kubernetes deployment:
 
-- Kubernetes部署:
-  - 前端界面: 通过LoadBalancer获取的外部IP访问
-  - 查看外部IP: `kubectl get service nginx`
+Frontend UI: Access via LoadBalancer external IP
+Check external IP: `kubectl get service nginx`
 
-## 组件说明
+## Component Description
 
-- **frontend**: React前端应用
-- **backend**: FastAPI后端API，包含图像识别逻辑
-- **nginx**: API网关配置
-- **postgres**: PostgreSQL数据库
-- **minio**: MinIO对象存储
+- **frontend**: React frontend application
+- **backend**: FastAPI backend with image recognition logic
+- **nginx**: API gateway configuration
+- **postgres**: PostgreSQL database
+- **minio**: MinIO object storage
 
-## 详细文档
+## Detailed Documentation
 
-更多详细信息，请参考 [tutorial.md](tutorial.md) 
+For more details, please refer to [tutorial.md](tutorial.md) and tutoral_kebernetes.md
+
+## Presentation Video
+https://www.youtube.com/watch?v=m2IgKe3dmYI
